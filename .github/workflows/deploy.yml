@@ -1,0 +1,62 @@
+name: build
+
+on:
+  push:
+    branches: 
+      - demo
+    paths:
+      - 'frontend/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci --legacy-peer-deps
+    - run: npm run build --if-present
+
+    -
+      name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ secrets.USERNAME_GITHUB }}
+        password: ${{ secrets.TOKEN_GITHUB }}
+    -
+      name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: frontend
+        push: true
+        tags: ghcr.io/miryalavenkat/frontend-bc-21:latest
+
+    - 
+      name: Deploy to EC2
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        EC2_IP_ADDRESS: ${{ secrets.EC2_IP_ADDRESS }}
+      run: |
+
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh -o StrictHostKeyChecking=no ubuntu@$ip " commands "
+
+        # Replace 'your-docker-compose.yml' with the actual filename of your Docker Compose file
+        #scp -i ~/Downloads/monolethic_demo.pem -r your-docker-compose.yml ubuntu@$EC2_IP_ADDRESS:/path/to/remote/folder
+
+        # Replace 'your-app-folder' with the folder where your application files are located
+        ssh  ubuntu@$EC2_IP_ADDRESS "docker rm ghcr.io/miryalavenkat/frontend-bc-21:latest && docker-compose up -d "

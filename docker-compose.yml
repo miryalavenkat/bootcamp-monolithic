@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  web-app:
+    image: ghcr.io/miryalavenkat/frontend-bc-21:latest
+    network_mode: "host"
+ 
+   
+
+  database:
+    image: ghcr.io/miryalavenkat/database-bc-21:v1
+    environment:
+      MYSQL_DATABASE: 'bc_25_gc'
+      MYSQL_ROOT_PASSWORD: 'test1234'
+    volumes:
+      - database_data:/var/lib/mysql
+    network_mode: "host"
+
+  
+  backend:
+    depends_on:
+      - database
+    image: ghcr.io/miryalavenkat/backend:v21
+    network_mode: "host"
+    
+volumes:
+  database_data:
+
