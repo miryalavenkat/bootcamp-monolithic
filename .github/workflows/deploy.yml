@@ -55,4 +55,4 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         #ssh -o StrictHostKeyChecking=no ubuntu@$ip " commands "
         
-        ssh -o StrictHostKeyChecking=no  ubuntu@$EC2_IP_ADDRESS "docker rm ghcr.io/miryalavenkat/frontend-bc-21:latest && docker-compose up -d "
+        ssh -o StrictHostKeyChecking=no  ubuntu@$EC2_IP_ADDRESS "docker rm -sf web-app; docker rmi ghcr.io/miryalavenkat/frontend-bc-21:latest ; docker-compose up -d "
