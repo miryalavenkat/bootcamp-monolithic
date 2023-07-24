@@ -55,9 +55,5 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh -o StrictHostKeyChecking=no ubuntu@$ip " commands "
 
-        # Replace 'your-docker-compose.yml' with the actual filename of your Docker Compose file
-        #scp -i ~/Downloads/monolethic_demo.pem -r your-docker-compose.yml ubuntu@$EC2_IP_ADDRESS:/path/to/remote/folder
-
-        # Replace 'your-app-folder' with the folder where your application files are located
         
         ssh  ubuntu@$EC2_IP_ADDRESS "docker rm ghcr.io/miryalavenkat/frontend-bc-21:latest && docker-compose up -d "
