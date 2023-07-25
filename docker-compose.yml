@@ -20,7 +20,7 @@ services:
   backend:
     depends_on:
       - database
-    image: ghcr.io/miryalavenkat/backend:v21
+    image: ghcr.io/miryalavenkat/backend:latest
     network_mode: "host"
     
 volumes:
