@@ -1,3 +1,4 @@
+
 name: build
 
 on:
@@ -5,30 +6,29 @@ on:
     branches: 
       - demo
     paths:
-      - '.github/workflows/deploy.yml'
-      - 'frontend/**'
+      - '.github/workflows/backend.yml'
+      - 'backend/**'
+    
 
 jobs:
-  build:
+  job1:
+    name: Build and Push All Service
 
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
-
-    strategy:
-      matrix:
-        node-version: [18.x]
+        working-directory: backend
 
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
       with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm ci --legacy-peer-deps
-    - run: npm run build --if-present
-
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: mvn clean package
     -
       name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -40,9 +40,9 @@ jobs:
       name: Build and push
       uses: docker/build-push-action@v4
       with:
-        context: frontend
+        context: backend
         push: true
-        tags: ghcr.io/miryalavenkat/frontend-bc-21:latest
+        tags: ghcr.io/miryalavenkat/backend:v21
 
     - 
       name: Deploy to EC2
@@ -55,4 +55,5 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
         
-        ssh -o StrictHostKeyChecking=no  ubuntu@$EC2_IP_ADDRESS "docker rm -sf web-app; docker rmi ghcr.io/miryalavenkat/frontend-bc-21:latest ; docker compose up -d "
+        ssh -o StrictHostKeyChecking=no  ubuntu@$EC2_IP_ADDRESS "docker rm -sf backend; docker rmi ghcr.io/miryalavenkat/backend:v21:latest ; docker compose up -d "
+    
